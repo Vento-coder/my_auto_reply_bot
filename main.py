@@ -497,24 +497,45 @@ async def admin_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     lang = get_user_language(uid)
     if not is_admin(update.effective_user.id):
-        await update.message.reply_text(lang_manager.get(lang, 'admin.not_admin'))
+        if update.message:
+            await update.message.reply_text(lang_manager.get(lang, 'admin.not_admin'))
+        else:
+            await update.callback_query.answer(lang_manager.get(lang, 'admin.not_admin_alert'), show_alert=True)
         return
     
     with db.session() as s:
-        users = s.query(User).filter_by(status="approved").all()
+        all_users = s.query(User).all()
+        approved_users = s.query(User).filter_by(status="approved").all()
         banned_users = s.query(User).filter_by(is_banned=True).all()
+        pending_users = s.query(User).filter_by(status="pending").all()
         admins = s.query(User).filter_by(is_admin=True).all()
         channels = s.query(MandatoryChannel).all()
+        
+        # Count logged in users
+        logged_in_ids = [acc.tg_user_id for acc in s.query(ConnectedAccount).all()]
+        logged_in = len([u for u in approved_users if u.tg_user_id in logged_in_ids])
+        not_logged_in = len(approved_users) - logged_in
     
     kb = [
-        [InlineKeyboardButton(f"{lang_manager.get(lang, 'admin.users')} ({len(users)} ta)", callback_data="list_users")],
+        [InlineKeyboardButton(f"{lang_manager.get(lang, 'admin.users')} ({len(approved_users)} ta)", callback_data="list_users")],
         [InlineKeyboardButton(f"{lang_manager.get(lang, 'admin.banned')} ({len(banned_users)} ta)", callback_data="list_banned")],
         [InlineKeyboardButton(f"{lang_manager.get(lang, 'admin.admins')} ({len(admins)} ta)", callback_data="list_admins")],
         [InlineKeyboardButton(f"📢 Kanallar ({len(channels)} ta)", callback_data="list_channels")],
     ]
     
-    text = lang_manager.get(lang, 'admin.panel')
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+    text = lang_manager.get(lang, 'admin.panel') + "\n\n"
+    text += "📊 **Statistika:**\n"
+    text += f"👥 Jami foydalanuvchilar: {len(all_users)} ta\n"
+    text += f"✅ Tasdiqlanganlar: {len(approved_users)} ta\n"
+    text += f"⏳ Tasdiqlash kutayotganlar: {len(pending_users)} ta\n"
+    text += f"🚫 Ban qilinganlar: {len(banned_users)} ta\n"
+    text += f"📝 Akkaunt ulaganlar: {logged_in} ta\n"
+    text += f"❓ Akkaunt ulamaganlar: {not_logged_in} ta\n"
+    
+    if update.message:
+        await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode='Markdown')
+    else:
+        await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode='Markdown')
 
 async def admin_list_channels(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -804,6 +825,7 @@ async def admin_back_to_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     
     await query.answer()
+    # Call admin_menu with the same update (it now handles both message and callback)
     await admin_menu(update, ctx)
 
 async def ban_command(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1013,7 +1035,7 @@ async def run_telethon_client(uid, enc_session, delay, random_delay, app):
             else:
                 await event.delete()
                 try:
-                    await client.send_message(event.chat_id, buffer_text)
+                    await client.send_message(event.chat_id, buffer_text, parse_mode='HTML')
                 except FloodWaitError as e:
                     await app.bot.send_message(uid, f"⚠️ FloodWait: {e.seconds} soniya kuting.")
 
@@ -1035,7 +1057,7 @@ async def run_telethon_client(uid, enc_session, delay, random_delay, app):
                         d = delay
                     try:
                         await asyncio.sleep(d)
-                        await client.send_message(event.chat_id, buf.text, reply_to=event.id)
+                        await client.send_message(event.chat_id, buf.text, reply_to=event.id, parse_mode='HTML')
                     except FloodWaitError as e:
                         with db.session() as s:
                             active.is_active = False
