@@ -78,18 +78,27 @@ def get_user_language(uid):
         return user.language if user else 'uz'
 
 async def notify_owner(app, uid: int, username: str, full_name: str):
+    from datetime import datetime
+    
     kb = [[
         InlineKeyboardButton("✅ Tasdiqlash", callback_data=f"appr_{uid}"),
         InlineKeyboardButton("❌ Rad etish", callback_data=f"rej_{uid}")
     ]]
-    try:
-        await app.bot.send_message(
-            chat_id=cfg.owner_id,
-            text=f"🔔 Yangi so'rov!\n\nIsm: {full_name}\nUsername: @{username}\nID: {uid}",
-            reply_markup=InlineKeyboardMarkup(kb)
-        )
-    except Exception as e:
-        log.error(f"Ownerga xabar yuborishda xato: {e}")
+    
+    # Get all admins
+    with db.session() as s:
+        admins = s.query(User).filter_by(is_admin=True).all()
+    
+    # Send to all admins
+    for admin in admins:
+        try:
+            await app.bot.send_message(
+                chat_id=admin.tg_user_id,
+                text=f"🔔 Yangi so'rov!\n\nIsm: {full_name}\nUsername: @{username}\nID: {uid}",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+        except Exception as e:
+            log.error(f"Admin {admin.tg_user_id} ga xabar yuborishda xato: {e}")
 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
@@ -226,24 +235,84 @@ async def show_main_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE, uid: in
         await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
 
 async def owner_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    from datetime import datetime
+    
     query = update.callback_query
-    if query.from_user.id != cfg.owner_id:
+    admin_uid = query.from_user.id
+    
+    if not is_admin(admin_uid):
         await query.answer("Siz admin emassiz!", show_alert=True)
         return
     
     action, uid_str = query.data.split("_")
     uid = int(uid_str)
+    
     with db.session() as s:
         user = s.query(User).filter_by(tg_user_id=uid).first()
-        if user:
-            user.status = "approved" if action == "appr" else "rejected"
+        if not user:
+            await query.answer("Foydalanuvchi topilmadi!", show_alert=True)
+            return
+        
+        # Race condition prevention: check if already processed
+        if user.status != "pending":
+            # Already processed by another admin
+            if user.status == "approved":
+                admin = s.query(User).filter_by(tg_user_id=user.approved_by).first()
+                admin_name = f"@{admin.username}" if admin else f"ID: {user.approved_by}"
+                await query.answer(f"Bu foydalanuvchi allaqachon tasdiqlangan!\nTasdiqlagan: {admin_name}", show_alert=True)
+            else:
+                await query.answer("Bu foydalanuvchi allaqachon rad etilgan!", show_alert=True)
+            return
+        
+        # Process approval/rejection
+        if action == "appr":
+            user.status = "approved"
+            user.approved_by = admin_uid
+            user.approved_at = datetime.now()
             s.commit()
+            
+            # Get admin info
+            admin = s.query(User).filter_by(tg_user_id=admin_uid).first()
+            admin_name = f"@{admin.username}" if admin else f"ID: {admin_uid}"
+            user_name = f"@{user.username}" if user.username else f"ID: {uid}"
+            timestamp = user.approved_at.strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Notify all admins
+            admins = s.query(User).filter_by(is_admin=True).all()
+            for adm in admins:
+                try:
+                    await ctx.bot.send_message(
+                        chat_id=adm.tg_user_id,
+                        text=f"✅ Tasdiqlandi!\n\nUser: {user_name} [{uid}]\nTasdiqlagan admin: {admin_name} [{admin_uid}]\nSana-vaqt: {timestamp}"
+                    )
+                except Exception as e:
+                    log.error(f"Admin {adm.tg_user_id} ga xabar yuborishda xato: {e}")
+            
+            # Notify user
+            try:
+                await ctx.bot.send_message(uid, "✅ So'rovingiz tasdiqlandi! /start buyrug'ini qayta bosing.")
+            except: pass
+        else:
+            user.status = "rejected"
+            s.commit()
+            
+            # Notify all admins
+            admins = s.query(User).filter_by(is_admin=True).all()
+            for adm in admins:
+                try:
+                    await ctx.bot.send_message(
+                        chat_id=adm.tg_user_id,
+                        text=f"❌ Rad etildi!\n\nUser: @{user.username or uid} [{uid}]\nRad etgan admin: @{query.from_user.username or admin_uid} [{admin_uid}]"
+                    )
+                except Exception as e:
+                    log.error(f"Admin {adm.tg_user_id} ga xabar yuborishda xato: {e}")
+            
+            # Notify user
+            try:
+                await ctx.bot.send_message(uid, "❌ Kechirasiz, sizning so'rovingiz rad etilgan.")
+            except: pass
     
-    await query.edit_message_text(f"Foydalanuvchi holati: {action}")
-    if action == "appr":
-        try:
-            await ctx.bot.send_message(uid, "✅ So'rovingiz tasdiqlandi! /start buyrug'ini qayta bosing.")
-        except: pass
+    await query.edit_message_text("✅ Amal bajarildi!")
 
 async def on_login(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()

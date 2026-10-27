@@ -11,11 +11,13 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     tg_user_id = Column(BigInteger, unique=True, index=True)
-    username = Column(String(50), nullable=True)
+    username = Column(String(100))
     status = Column(String(20), default="pending")
     is_banned = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
     language = Column(String(5), default="uz")
+    approved_by = Column(BigInteger, nullable=True)
+    approved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
 
 class ConnectedAccount(Base):
