@@ -57,6 +57,9 @@ sender = Sender(cfg)
 
 STATE: dict[int, dict] = {}
 
+# Track running userbot clients for logout functionality
+RUNNING_USERBOTS: dict[int, TelegramClient] = {}
+
 async def db_operation(func, max_retries=3):
     """Execute database operation with retry logic for handling locks"""
     for attempt in range(max_retries):
@@ -144,7 +147,14 @@ async def logout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         s.delete(acc)
         s.commit()
     
-    # Note: Userbot will be stopped on next restart
+    # Stop userbot client if running
+    if uid in RUNNING_USERBOTS:
+        try:
+            await RUNNING_USERBOTS[uid].disconnect()
+            del RUNNING_USERBOTS[uid]
+        except Exception as e:
+            log.error(f"Error stopping userbot for {uid}: {e}")
+    
     await update.message.reply_text(lang_manager.get(lang, 'logout.success'))
 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -623,7 +633,14 @@ async def on_logout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         s.delete(acc)
         s.commit()
     
-    # Note: Userbot will be stopped on next restart
+    # Stop userbot client if running
+    if uid in RUNNING_USERBOTS:
+        try:
+            await RUNNING_USERBOTS[uid].disconnect()
+            del RUNNING_USERBOTS[uid]
+        except Exception as e:
+            log.error(f"Error stopping userbot for {uid}: {e}")
+    
     await query.edit_message_text(lang_manager.get(lang, 'logout.success'))
 
 async def on_back(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1258,6 +1275,7 @@ async def run_telethon_client(uid, enc_session, delay, random_delay, app):
     try:
         await client.start()
         log.info(f"Userbot ulandi: {uid}")
+        RUNNING_USERBOTS[uid] = client  # Track running client
     except Exception as e:
         log.error(f"Failed to start userbot for {uid}: {e}")
         await app.bot.send_message(uid, "⚠️ Akkaunt ulashda xatolik yuz berdi. Session yaroqsiz bo'lishi mumkin. Qayta ulash uchun /start deb yozing.")
