@@ -20,6 +20,36 @@ from language_manager import lang_manager
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
+def run_migrations():
+    """Run database migrations on startup"""
+    from sqlalchemy import text
+    from config import load_config
+    
+    cfg = load_config()
+    db_url = cfg.db_url
+    
+    if db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg2://")
+    
+    from sqlalchemy import create_engine
+    engine = create_engine(db_url)
+    
+    with engine.connect() as conn:
+        # Check if approved_by column exists
+        result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'approved_by'"))
+        columns = [row[0] for row in result]
+        
+        if 'approved_by' not in columns:
+            log.info("Running migration: Adding approved_by and approved_at columns...")
+            conn.execute(text("ALTER TABLE users ADD COLUMN approved_by BIGINT"))
+            conn.execute(text("ALTER TABLE users ADD COLUMN approved_at TIMESTAMP"))
+            conn.commit()
+            log.info("✅ Migration completed successfully!")
+        else:
+            log.info("ℹ️ Migration already applied.")
+    
+    engine.dispose()
+
 cfg = load_config()
 db = DB(cfg)
 auth = AuthFlow(cfg)
@@ -1180,6 +1210,9 @@ async def run_telethon_client(uid, enc_session, delay, random_delay, app):
     log.info(f"Userbot ulandi: {uid}")
 
 async def main_app():
+    # Run migrations on startup
+    run_migrations()
+    
     app = Application.builder().token(cfg.bot_token).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("admin", admin_menu))
