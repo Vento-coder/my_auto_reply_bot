@@ -634,7 +634,8 @@ async def admin_list_users(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     
     kb = []
     for user in users:
-        kb.append([InlineKeyboardButton(f"✅ {user.tg_user_id}", callback_data=f"admin_user_{user.tg_user_id}")])
+        display_name = f"@{user.username}" if user.username else f"ID: {user.tg_user_id}"
+        kb.append([InlineKeyboardButton(f"✅ {display_name}", callback_data=f"admin_user_{user.tg_user_id}")])
     
     kb.append([InlineKeyboardButton(lang_manager.get(lang, 'menu.back'), callback_data="admin_menu")])
     
@@ -656,7 +657,8 @@ async def admin_list_banned(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     
     kb = []
     for user in banned_users:
-        kb.append([InlineKeyboardButton(f"🚫 {user.tg_user_id}", callback_data=f"admin_user_{user.tg_user_id}")])
+        display_name = f"@{user.username}" if user.username else f"ID: {user.tg_user_id}"
+        kb.append([InlineKeyboardButton(f"🚫 {display_name}", callback_data=f"admin_user_{user.tg_user_id}")])
     
     kb.append([InlineKeyboardButton(lang_manager.get(lang, 'menu.back'), callback_data="admin_menu")])
     
@@ -679,11 +681,12 @@ async def admin_list_admins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = []
     for admin in admins:
         is_owner = admin.tg_user_id == cfg.owner_id
-        label = f"👑 {admin.tg_user_id} {lang_manager.get(lang, 'admin.owner')}" if is_owner else f"👑 {admin.tg_user_id}"
+        display_name = f"@{admin.username}" if admin.username else f"ID: {admin.tg_user_id}"
+        label = f"👑 {display_name} {lang_manager.get(lang, 'admin.owner')}" if is_owner else f"👑 {display_name}"
         if not is_owner:
             kb.append([InlineKeyboardButton(label, callback_data=f"admin_detail_{admin.tg_user_id}")])
         else:
-            kb.append([InlineKeyboardButton(label, callback_data="noop")])
+            kb.append([InlineKeyboardButton(label, callback_data=f"admin_user_{admin.tg_user_id}")])
     
     kb.append([InlineKeyboardButton(lang_manager.get(lang, 'menu.back'), callback_data="admin_menu")])
     
