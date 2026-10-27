@@ -1,0 +1,6 @@
+Telethon==1.40.*
+python-dotenv==1.0.*
+SQLAlchemy==2.0.*
+python-telegram-bot==22.*
+cryptography==44.*
+psycopg2-binary==2.9.*
