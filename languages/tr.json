@@ -31,7 +31,9 @@
     "new_prompt": "📝 Arabellek boş. Metin girin:",
     "saved": "✅ Arabellek kaydedildi! Artık grupta `.bufer` yazabilirsiniz.",
     "deleted": "✅ Arabellek silindi!",
-    "edit_button": "✏️ Düzenle"
+    "edit_button": "✏️ Düzenle",
+    "create_button": "➕ Oluştur",
+    "delete_button": "🗑️ Sil"
   },
   "settings": {
     "title": "⚙️ Hız ayarları\n\n",
@@ -119,7 +121,8 @@
     "purpose_text": "Bu bot gruplarda otomatik yanıt göndermek için tasarlanmıştır. Örneğin, müşterilere sık sık aynı yanıtı göndermeniz gerekiyorsa, bu metni arabelleğe kaydedersiniz ve bot otomatik olarak yanıt verir.",
     "buffer_send": "Grupta `.bufer` yazın",
     "buffer_send_1": "1. Hesap bağlayın (ana menüde \"📝 Kayıt ol\")",
-    "buffer_send_2": "2. Arabellek metnini girin (ana menüde \"👁 Arabelleği görüntüle\" → \"📝 Arabellek ekle\")",
+    "buffer_send_2": "2. Arabellek metnini girin (ana menüde \"👁 Arabelleği görüntüle\" → \"➕ Oluştur\")",
+    "buffer_send_2_alt": "   Veya grupta `.bufer merhaba` yazın - arabellek otomatik kaydedilir",
     "buffer_send_3": "3. Grupta `.bufer` yazın",
     "buffer_send_4": "4. Arabellek metni gruba gönderilecek",
     "reply_to": "Birine yanıt ver",

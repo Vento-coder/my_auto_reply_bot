@@ -31,7 +31,9 @@
     "new_prompt": "📝 Bufer bo'sh. Matnni kiriting:",
     "saved": "✅ Bufer saqlandi! Endi guruhda `.bufer` deb yozishingiz mumkin.",
     "deleted": "✅ Bufer o'chirildi!",
-    "edit_button": "✏️ Tahrirlash"
+    "edit_button": "✏️ Tahrirlash",
+    "create_button": "➕ Yaratish",
+    "delete_button": "🗑️ O'chirish"
   },
   "settings": {
     "title": "⚙️ Tezlik sozlamalari\n\n",
@@ -119,7 +121,8 @@
     "purpose_text": "Bu bot guruhlarda avtomatik reply yuborish uchun mo'ljallangan. Masalan, mijozlarga tez-tez bir xil javob yuborishingiz kerak bo'lsa, bu matnni bufferga saqlaysiz va bot avtomatik reply qiladi.",
     "buffer_send": "Guruhda `.bufer` yozish",
     "buffer_send_1": "1. Botga akkaunt ulang (Asosiy menyuda \"📝 Ro'yxatdan o'tish\")",
-    "buffer_send_2": "2. Buffer matnini kiriting (Asosiy menyuda \"👁 Buferni ko'rish\" → \"📝 Bufer qo'shish\")",
+    "buffer_send_2": "2. Buffer matnini kiriting (Asosiy menyuda \"👁 Buferni ko'rish\" → \"➕ Yaratish\")",
+    "buffer_send_2_alt": "   Yoki guruhda `.bufer salom` deb yozing - bufer avtomatik saqlanadi",
     "buffer_send_3": "3. Guruhda `.bufer` deb yozing",
     "buffer_send_4": "4. Buffer matni guruhga yuboriladi",
     "reply_to": "Kimga Reply qilish",

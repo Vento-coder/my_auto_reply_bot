@@ -29,9 +29,11 @@
     "edit": "📝 Current buffer:\n\n",
     "edit_prompt": "\n\n✏️ Enter new text:",
     "new_prompt": "📝 Buffer is empty. Enter text:",
-    "saved": "✅ Buffer saved! Now you can write `.bufer` in the group.",
+    "saved": "✅ Buffer saved! Now type `.bufer` in groups.",
     "deleted": "✅ Buffer deleted!",
-    "edit_button": "✏️ Edit"
+    "edit_button": "✏️ Edit",
+    "create_button": "➕ Create",
+    "delete_button": "🗑️ Delete"
   },
   "settings": {
     "title": "⚙️ Speed settings\n\n",
@@ -117,10 +119,11 @@
     "title": "📖 Usage Guide",
     "purpose": "Purpose",
     "purpose_text": "This bot is designed for automatic reply in groups. For example, if you frequently need to send the same response to customers, you save this text in the buffer and the bot automatically replies.",
-    "buffer_send": "Write `.bufer` in group",
+    "buffer_send": "Send in group `.bufer`",
     "buffer_send_1": "1. Connect account (in main menu \"📝 Register\")",
-    "buffer_send_2": "2. Enter buffer text (in main menu \"👁 View buffer\" → \"📝 Add buffer\")",
-    "buffer_send_3": "3. Write `.bufer` in group",
+    "buffer_send_2": "2. Enter buffer text (in main menu \"👁 View buffer\" → \"➕ Create\")",
+    "buffer_send_2_alt": "   Or write in group `.bufer hello` - buffer saves automatically",
+    "buffer_send_3": "3. Write in group `.bufer`",
     "buffer_send_4": "4. Buffer text will be sent to group",
     "reply_to": "Reply to someone",
     "reply_to_1": "1. Reply to someone's message",

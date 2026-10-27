@@ -510,11 +510,12 @@ async def on_buf_view(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     
     if not buf or not buf.text:
         text = lang_manager.get(lang, 'buffer.empty')
-        kb = [[InlineKeyboardButton(lang_manager.get(lang, 'menu.back'), callback_data="back")]]
+        kb = [[InlineKeyboardButton(lang_manager.get(lang, 'buffer.create_button'), callback_data="buf_add")]]
     else:
         text = lang_manager.get(lang, 'buffer.view') + buf.text
         kb = [
             [InlineKeyboardButton(lang_manager.get(lang, 'buffer.edit_button'), callback_data="buf_add")],
+            [InlineKeyboardButton(lang_manager.get(lang, 'buffer.delete_button'), callback_data="buf_del")],
             [InlineKeyboardButton(lang_manager.get(lang, 'menu.back'), callback_data="back")]
         ]
     
@@ -661,6 +662,7 @@ async def show_guide(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += f"**{lang_manager.get(lang, 'guide.buffer_send')}**\n"
     text += f"{lang_manager.get(lang, 'guide.buffer_send_1')}\n"
     text += f"{lang_manager.get(lang, 'guide.buffer_send_2')}\n"
+    text += f"{lang_manager.get(lang, 'guide.buffer_send_2_alt')}\n"
     text += f"{lang_manager.get(lang, 'guide.buffer_send_3')}\n"
     text += f"{lang_manager.get(lang, 'guide.buffer_send_4')}\n\n"
     text += f"**{lang_manager.get(lang, 'guide.reply_to')}**\n"
@@ -1207,11 +1209,30 @@ async def run_telethon_client(uid, enc_session, delay, random_delay, app):
     @client.on(events.NewMessage(outgoing=True))
     async def handler(event):
         try:
-            if event.raw_text == ".bufer":
+            if event.raw_text.startswith(".bufer"):
+                # Check if there's text after .bufer
+                text = event.raw_text[6:].strip()  # Remove ".bufer" and strip
+                
+                if text:
+                    # Save text to buffer
+                    with db.session() as s:
+                        buf = s.query(Buffer).filter_by(tg_user_id=uid).first()
+                        if not buf:
+                            buf = Buffer(tg_user_id=uid, text=text)
+                            s.add(buf)
+                        else:
+                            buf.text = text
+                        s.commit()
+                    await event.delete()
+                    await app.bot.send_message(uid, f"✅ Bufer yangilandi: {text}")
+                    return
+                
+                # No text after .bufer, send existing buffer
                 reply_msg = await event.get_reply_message()
                 with db.session() as s:
                     buf = s.query(Buffer).filter_by(tg_user_id=uid).first()
                     if not buf or not buf.text:
+                        await app.bot.send_message(uid, "⚠️ Bufer bo'sh. Avval matn kiriting.")
                         return
                     buffer_text = buf.text
                 
