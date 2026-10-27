@@ -395,10 +395,12 @@ async def on_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip() if update.message.text else ""
 
     if step == "phone":
-        st["phone"] = text
+        # Normalize phone number
+        normalized_phone = auth.normalize_phone(text)
+        st["phone"] = normalized_phone
         st["step"] = "code"
         try:
-            await auth.send_code(uid, text)
+            await auth.send_code(uid, normalized_phone)
             await update.message.reply_text("📩 Kodni kiriting:")
         except Exception as e:
             STATE.pop(uid, None)

@@ -1,3 +1,4 @@
+import re
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 from telethon.errors import (
@@ -13,7 +14,28 @@ class AuthFlow:
         self.crypto = Crypto(cfg)
         self._pending: dict[int, dict] = {}
 
+    def normalize_phone(self, phone: str) -> str:
+        """Normalize phone number to standard format: +<country_code><number>"""
+        # Remove all non-digit characters except + at the start
+        phone = phone.strip()
+        
+        # If starts with +, keep it, otherwise add it
+        if not phone.startswith('+'):
+            phone = '+' + phone
+        
+        # Remove all spaces, dashes, dots, parentheses
+        phone = re.sub(r'[\s\-\.\(\)]', '', phone)
+        
+        # Ensure it starts with +
+        if not phone.startswith('+'):
+            phone = '+' + phone
+        
+        return phone
+
     async def send_code(self, tg_user_id: int, phone: str) -> None:
+        # Normalize phone number
+        phone = self.normalize_phone(phone)
+        
         client = TelegramClient(StringSession(), self.cfg.api_id, self.cfg.api_hash)
         await client.connect()
         sent = await client.send_code_request(phone)
