@@ -106,6 +106,32 @@
   },
   "common": {
     "error": "Xato: ",
-    "back_to_menu": "Admin menyuga qaytish:"
+    "back_to_menu": "Admin menyuga qaytish:",
+    "back": "Orqaga",
+    "cancel": "Bekor qilish",
+    "confirm": "Tasdiqlash"
+  },
+  "guide": {
+    "title": "📖 Foydalanish Yo'riqnomasi",
+    "purpose": "Foydalanish Maqsadi",
+    "purpose_text": "Bu bot guruhlarda avtomatik reply yuborish uchun mo'ljallangan. Masalan, mijozlarga tez-tez bir xil javob yuborishingiz kerak bo'lsa, bu matnni bufferga saqlaysiz va bot avtomatik reply qiladi.",
+    "buffer_send": "Guruhda `.bufer` yozish",
+    "buffer_send_1": "1. Botga akkaunt ulang (Asosiy menyuda \"📝 Ro'yxatdan o'tish\")",
+    "buffer_send_2": "2. Buffer matnini kiriting (Asosiy menyuda \"👁 Buferni ko'rish\" → \"📝 Bufer qo'shish\")",
+    "buffer_send_3": "3. Guruhda `.bufer` deb yozing",
+    "buffer_send_4": "4. Buffer matni guruhga yuboriladi",
+    "reply_to": "Kimga Reply qilish",
+    "reply_to_1": "1. Birovning xabariga reply qiling",
+    "reply_to_2": "2. `.bufer` deb yozing",
+    "reply_to_3": "3. Xabar o'chib ketadi",
+    "reply_to_4": "4. Endi shu odam yozganda, avtomatik reply qilinadi",
+    "stop_reply": "Auto-reply ni o'chirish",
+    "stop_reply_text": "Guruhda `.stop` deb yozing → Auto-reply to'xtatiladi",
+    "summary": "Qisqacha",
+    "summary_buffer": ".bufer - Buffer matnini yuborish",
+    "summary_reply": ".bufer (reply) - Auto-reply yoqish",
+    "summary_stop": ".stop - Auto-reply o'chirish",
+    "disclaimer_title": "⚠️ Muhim Eslatma",
+    "disclaimer_text": "Bu userbot foydalanuvchining o'z ixtiyori bilan ulagan akkaunti orqali ishlaydi. Sozlangan tezlik va buffer matni uchun bot va uning ma'muriyati javobgar emas. Foydalanuvchi o'z harakatlari uchun to'liq javobgardir."
   }
 }

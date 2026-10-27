@@ -226,6 +226,7 @@ async def show_main_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE, uid: in
             [InlineKeyboardButton(lang_manager.get(lang, 'menu.delete_buffer'), callback_data="buf_del")],
             [InlineKeyboardButton(f"{lang_manager.get(lang, 'menu.settings')} ({delay_text})", callback_data="set_delay")],
             [InlineKeyboardButton("🌐 Til / Language", callback_data="set_language")],
+            [InlineKeyboardButton("📖 Guide / Yo'riqnomа", callback_data="show_guide")],
         ]
         text = lang_manager.get(lang, 'menu.main')
         
@@ -561,6 +562,37 @@ async def change_language(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def on_back(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
     await show_main_menu(update, ctx, update.effective_user.id)
+
+async def show_guide(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    uid = query.from_user.id
+    lang = get_user_language(uid)
+    
+    text = f"{lang_manager.get(lang, 'guide.title')}\n\n"
+    text += f"**{lang_manager.get(lang, 'guide.purpose')}**\n"
+    text += f"{lang_manager.get(lang, 'guide.purpose_text')}\n\n"
+    text += f"**{lang_manager.get(lang, 'guide.buffer_send')}**\n"
+    text += f"{lang_manager.get(lang, 'guide.buffer_send_1')}\n"
+    text += f"{lang_manager.get(lang, 'guide.buffer_send_2')}\n"
+    text += f"{lang_manager.get(lang, 'guide.buffer_send_3')}\n"
+    text += f"{lang_manager.get(lang, 'guide.buffer_send_4')}\n\n"
+    text += f"**{lang_manager.get(lang, 'guide.reply_to')}**\n"
+    text += f"{lang_manager.get(lang, 'guide.reply_to_1')}\n"
+    text += f"{lang_manager.get(lang, 'guide.reply_to_2')}\n"
+    text += f"{lang_manager.get(lang, 'guide.reply_to_3')}\n"
+    text += f"{lang_manager.get(lang, 'guide.reply_to_4')}\n\n"
+    text += f"**{lang_manager.get(lang, 'guide.stop_reply')}**\n"
+    text += f"{lang_manager.get(lang, 'guide.stop_reply_text')}\n\n"
+    text += f"**{lang_manager.get(lang, 'guide.summary')}**\n"
+    text += f"• {lang_manager.get(lang, 'guide.summary_buffer')}\n"
+    text += f"• {lang_manager.get(lang, 'guide.summary_reply')}\n"
+    text += f"• {lang_manager.get(lang, 'guide.summary_stop')}\n\n"
+    text += f"{lang_manager.get(lang, 'guide.disclaimer_title')}\n"
+    text += f"{lang_manager.get(lang, 'guide.disclaimer_text')}"
+    
+    kb = [[InlineKeyboardButton(lang_manager.get(lang, 'menu.back'), callback_data="back")]]
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode='Markdown')
 
 async def admin_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
@@ -1167,6 +1199,7 @@ async def main_app():
     app.add_handler(CallbackQueryHandler(change_delay, pattern="^change_delay$"))
     app.add_handler(CallbackQueryHandler(set_language, pattern="^set_language$"))
     app.add_handler(CallbackQueryHandler(change_language, pattern="^lang_"))
+    app.add_handler(CallbackQueryHandler(show_guide, pattern="^show_guide$"))
     app.add_handler(CallbackQueryHandler(on_back, pattern="^back$"))
     app.add_handler(CallbackQueryHandler(admin_list_users, pattern="^list_users$"))
     app.add_handler(CallbackQueryHandler(admin_list_banned, pattern="^list_banned$"))

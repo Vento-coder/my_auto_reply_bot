@@ -106,6 +106,32 @@
   },
   "common": {
     "error": "Hata: ",
-    "back_to_menu": "Yönetici menüsüne dön:"
+    "back_to_menu": "Admin menüsüne dön:",
+    "back": "Geri",
+    "cancel": "İptal",
+    "confirm": "Onayla"
+  },
+  "guide": {
+    "title": "📖 Kullanım Kılavuzu",
+    "purpose": "Kullanım Amacı",
+    "purpose_text": "Bu bot gruplarda otomatik yanıt göndermek için tasarlanmıştır. Örneğin, müşterilere sık sık aynı yanıtı göndermeniz gerekiyorsa, bu metni arabelleğe kaydedersiniz ve bot otomatik olarak yanıt verir.",
+    "buffer_send": "Grupta `.bufer` yazın",
+    "buffer_send_1": "1. Hesap bağlayın (ana menüde \"📝 Kayıt ol\")",
+    "buffer_send_2": "2. Arabellek metnini girin (ana menüde \"👁 Arabelleği görüntüle\" → \"📝 Arabellek ekle\")",
+    "buffer_send_3": "3. Grupta `.bufer` yazın",
+    "buffer_send_4": "4. Arabellek metni gruba gönderilecek",
+    "reply_to": "Birine yanıt ver",
+    "reply_to_1": "1. Birinin mesajına yanıt verin",
+    "reply_to_2": "2. `.bufer` yazın",
+    "reply_to_3": "3. Mesaj silinecek",
+    "reply_to_4": "4. Artık o kişi yazdığında otomatik yanıt gönderilecek",
+    "stop_reply": "Otomatik yanıtı devre dışı bırak",
+    "stop_reply_text": "Grupta `.stop` yazın → Otomatik yanıt durdurulacak",
+    "summary": "Özet",
+    "summary_buffer": ".bufer - Arabellek metnini gönder",
+    "summary_reply": ".bufer (reply) - Otomatik yanıtı etkinleştir",
+    "summary_stop": ".stop - Otomatik yanıtı devre dışı bırak",
+    "disclaimer_title": "⚠️ Önemli Not",
+    "disclaimer_text": "Bu userbot, kullanıcının kendi isteğiyle bağladığı bir hesap üzerinden çalışır. Bot ve yönetimi, yapılandırılan hız ve arabellek metninden sorumlu değildir. Kullanıcı eylemlerinden tamamen sorumludur."
   }
 }
