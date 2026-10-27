@@ -102,7 +102,9 @@
     "unban_usage": "❌ Қолдану: /unban <user_id> немесе /unban @username",
     "add_admin_usage": "❌ Қолдану: /add_admin <user_id> немесе /add_admin @username",
     "del_admin_usage": "❌ Қолдану: /del_admin <user_id> немесе /del_admin @username",
-    "invalid_id": "❌ Жарамсыз ID."
+    "invalid_id": "❌ Жарамсыз ID.",
+    "logout_no_account": "❌ Сіз тіркелгі қоспадыңыз.",
+    "logout_success": "✅ Тіркелгі сәтті ажыратылды. Қайта қосу үшін /start жазыңыз."
   },
   "common": {
     "error": "Қате: ",

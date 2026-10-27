@@ -102,7 +102,9 @@
     "unban_usage": "❌ Usage: /unban <user_id> or /unban @username",
     "add_admin_usage": "❌ Usage: /add_admin <user_id> or /add_admin @username",
     "del_admin_usage": "❌ Usage: /del_admin <user_id> or /del_admin @username",
-    "invalid_id": "❌ Invalid ID."
+    "invalid_id": "❌ Invalid ID.",
+    "logout_no_account": "❌ You haven't connected an account.",
+    "logout_success": "✅ Account successfully disconnected. To reconnect, type /start."
   },
   "common": {
     "error": "Error: ",

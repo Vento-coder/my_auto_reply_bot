@@ -102,7 +102,9 @@
     "unban_usage": "❌ Foydalanish: /unban <user_id> yoki /unban @username",
     "add_admin_usage": "❌ Foydalanish: /add_admin <user_id> yoki /add_admin @username",
     "del_admin_usage": "❌ Foydalanish: /del_admin <user_id> yoki /del_admin @username",
-    "invalid_id": "❌ Noto'g'ri ID."
+    "invalid_id": "❌ Noto'g'ri ID.",
+    "logout_no_account": "❌ Siz akkaunt ulamagansiz.",
+    "logout_success": "✅ Akkaunt muvaffaqiyatli uzildi. Qayta ulash uchun /start deb yozing."
   },
   "common": {
     "error": "Xato: ",

@@ -102,7 +102,9 @@
     "unban_usage": "❌ Использование: /unban <user_id> или /unban @username",
     "add_admin_usage": "❌ Использование: /add_admin <user_id> или /add_admin @username",
     "del_admin_usage": "❌ Использование: /del_admin <user_id> или /del_admin @username",
-    "invalid_id": "❌ Неверный ID."
+    "invalid_id": "❌ Неверный ID.",
+    "logout_no_account": "❌ Вы не подключили аккаунт.",
+    "logout_success": "✅ Аккаунт успешно отключен. Для повторного подключения напишите /start."
   },
   "common": {
     "error": "Ошибка: ",

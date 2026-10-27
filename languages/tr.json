@@ -102,7 +102,9 @@
     "unban_usage": "❌ Kullanım: /unban <user_id> veya /unban @username",
     "add_admin_usage": "❌ Kullanım: /add_admin <user_id> veya /add_admin @username",
     "del_admin_usage": "❌ Kullanım: /del_admin <user_id> veya /del_admin @username",
-    "invalid_id": "❌ Geçersiz ID."
+    "invalid_id": "❌ Geçersiz ID.",
+    "logout_no_account": "❌ Hesap bağlamadınız.",
+    "logout_success": "✅ Hesap başarıyla bağlantısı kesildi. Yeniden bağlamak için /start yazın."
   },
   "common": {
     "error": "Hata: ",

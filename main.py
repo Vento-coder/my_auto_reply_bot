@@ -130,6 +130,22 @@ async def notify_owner(app, uid: int, username: str, full_name: str):
         except Exception as e:
             log.error(f"Admin {admin.tg_user_id} ga xabar yuborishda xato: {e}")
 
+async def logout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    uid = update.effective_user.id
+    lang = get_user_language(uid)
+    
+    with db.session() as s:
+        acc = s.query(ConnectedAccount).filter_by(tg_user_id=uid).first()
+        if not acc:
+            await update.message.reply_text(lang_manager.get(lang, 'logout.no_account'))
+            return
+        
+        # Delete account from database
+        s.delete(acc)
+        s.commit()
+    
+    await update.message.reply_text(lang_manager.get(lang, 'logout.success'))
+
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     username = update.effective_user.username
@@ -257,6 +273,7 @@ async def show_main_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE, uid: in
             [InlineKeyboardButton(f"{lang_manager.get(lang, 'menu.settings')} ({delay_text})", callback_data="set_delay")],
             [InlineKeyboardButton("🌐 Til / Language", callback_data="set_language")],
             [InlineKeyboardButton("📖 Guide / Yo'riqnomа", callback_data="show_guide")],
+            [InlineKeyboardButton("🚪 Logout / Chiqish", callback_data="logout")],
         ]
         text = lang_manager.get(lang, 'menu.main')
         
@@ -588,6 +605,24 @@ async def change_language(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             s.commit()
     
     await show_main_menu(update, ctx, uid)
+
+async def on_logout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    uid = query.from_user.id
+    lang = get_user_language(uid)
+    
+    with db.session() as s:
+        acc = s.query(ConnectedAccount).filter_by(tg_user_id=uid).first()
+        if not acc:
+            await query.edit_message_text(lang_manager.get(lang, 'logout.no_account'))
+            return
+        
+        # Delete account from database
+        s.delete(acc)
+        s.commit()
+    
+    await query.edit_message_text(lang_manager.get(lang, 'logout.success'))
 
 async def on_back(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
@@ -1150,64 +1185,81 @@ async def run_telethon_client(uid, enc_session, delay, random_delay, app):
     
     @client.on(events.NewMessage(outgoing=True))
     async def handler(event):
-        if event.raw_text == ".bufer":
-            reply_msg = await event.get_reply_message()
-            with db.session() as s:
-                buf = s.query(Buffer).filter_by(tg_user_id=uid).first()
-                if not buf or not buf.text:
-                    return
-                buffer_text = buf.text
-            
-            if reply_msg:
-                target_user = reply_msg.sender_id
-                target_chat = event.chat_id
+        try:
+            if event.raw_text == ".bufer":
+                reply_msg = await event.get_reply_message()
                 with db.session() as s:
-                    s.query(ActiveReply).filter_by(tg_user_id=uid, chat_id=target_chat).update({"is_active": False})
-                    s.add(ActiveReply(tg_user_id=uid, target_user_id=target_user, chat_id=target_chat, is_active=True))
-                    s.commit()
-                await event.delete()
-            else:
-                await event.delete()
-                try:
-                    await client.send_message(event.chat_id, buffer_text, parse_mode='HTML')
-                except FloodWaitError as e:
-                    await app.bot.send_message(uid, f"⚠️ FloodWait: {e.seconds} soniya kuting.")
+                    buf = s.query(Buffer).filter_by(tg_user_id=uid).first()
+                    if not buf or not buf.text:
+                        return
+                    buffer_text = buf.text
+                
+                if reply_msg:
+                    target_user = reply_msg.sender_id
+                    target_chat = event.chat_id
+                    with db.session() as s:
+                        s.query(ActiveReply).filter_by(tg_user_id=uid, chat_id=target_chat).update({"is_active": False})
+                        s.add(ActiveReply(tg_user_id=uid, target_user_id=target_user, chat_id=target_chat, is_active=True))
+                        s.commit()
+                    await event.delete()
+                else:
+                    await event.delete()
+                    try:
+                        await client.send_message(event.chat_id, buffer_text, parse_mode='HTML')
+                    except FloodWaitError as e:
+                        await app.bot.send_message(uid, f"⚠️ FloodWait: {e.seconds} soniya kuting.")
+        except Exception as e:
+            log.error(f"Userbot error for {uid}: {e}")
+            await app.bot.send_message(uid, "⚠️ Userbot xatolik yuz berdi. Akkauntingiz uzilgan bo'lishi mumkin. Qayta ulash uchun /start deb yozing.")
 
     @client.on(events.NewMessage(incoming=True))
     async def on_incoming(event):
-        with db.session() as s:
-            active = s.query(ActiveReply).filter_by(
-                tg_user_id=uid, target_user_id=event.sender_id, chat_id=event.chat_id, is_active=True
-            ).first()
-            if active:
-                buf = s.query(Buffer).filter_by(tg_user_id=uid).first()
-                if buf and buf.text:
-                    if random_delay:
-                        # Random delay: base delay ± 20%
-                        variation = delay * 0.2
-                        d = random.uniform(delay - variation, delay + variation)
-                        d = max(0.04, min(0.5, d))  # Keep within bounds
-                    else:
-                        d = delay
-                    try:
-                        await asyncio.sleep(d)
-                        await client.send_message(event.chat_id, buf.text, reply_to=event.id, parse_mode='HTML')
-                    except FloodWaitError as e:
-                        with db.session() as s:
-                            active.is_active = False
-                            s.commit()
-                        await app.bot.send_message(uid, f"⚠️ FloodWait. Reply to'xtatildi.")
+        try:
+            with db.session() as s:
+                active = s.query(ActiveReply).filter_by(
+                    tg_user_id=uid, target_user_id=event.sender_id, chat_id=event.chat_id, is_active=True
+                ).first()
+                if active:
+                    buf = s.query(Buffer).filter_by(tg_user_id=uid).first()
+                    if buf and buf.text:
+                        if random_delay:
+                            # Random delay: base delay ± 20%
+                            variation = delay * 0.2
+                            d = random.uniform(delay - variation, delay + variation)
+                            d = max(0.04, min(0.5, d))  # Keep within bounds
+                        else:
+                            d = delay
+                        try:
+                            await asyncio.sleep(d)
+                            await client.send_message(event.chat_id, buf.text, reply_to=event.id, parse_mode='HTML')
+                        except FloodWaitError as e:
+                            with db.session() as s:
+                                active.is_active = False
+                                s.commit()
+                            await app.bot.send_message(uid, f"⚠️ FloodWait. Reply to'xtatildi.")
+        except Exception as e:
+            log.error(f"Userbot error for {uid}: {e}")
+            await app.bot.send_message(uid, "⚠️ Userbot xatolik yuz berdi. Akkauntingiz uzilgan bo'lishi mumkin. Qayta ulash uchun /start deb yozing.")
 
     @client.on(events.NewMessage(outgoing=True, pattern=r"\.stop"))
     async def stop_handler(event):
-        with db.session() as s:
-            s.query(ActiveReply).filter_by(tg_user_id=uid, chat_id=event.chat_id).update({"is_active": False})
-            s.commit()
-        await event.delete()
-        await app.bot.send_message(uid, "🛑 Reply to'xtatildi.")
+        try:
+            with db.session() as s:
+                s.query(ActiveReply).filter_by(tg_user_id=uid, chat_id=event.chat_id).update({"is_active": False})
+                s.commit()
+            await event.delete()
+            await app.bot.send_message(uid, "🛑 Reply to'xtatildi.")
+        except Exception as e:
+            log.error(f"Userbot error for {uid}: {e}")
+            await app.bot.send_message(uid, "⚠️ Userbot xatolik yuz berdi. Akkauntingiz uzilgan bo'lishi mumkin. Qayta ulash uchun /start deb yozing.")
     
-    await client.start()
-    log.info(f"Userbot ulandi: {uid}")
+    try:
+        await client.start()
+        log.info(f"Userbot ulandi: {uid}")
+    except Exception as e:
+        log.error(f"Failed to start userbot for {uid}: {e}")
+        await app.bot.send_message(uid, "⚠️ Akkaunt ulashda xatolik yuz berdi. Session yaroqsiz bo'lishi mumkin. Qayta ulash uchun /start deb yozing.")
+        return
 
 async def main_app():
     # Run migrations on startup
@@ -1215,6 +1267,7 @@ async def main_app():
     
     app = Application.builder().token(cfg.bot_token).build()
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("logout", logout))
     app.add_handler(CommandHandler("admin", admin_menu))
     app.add_handler(CommandHandler("ban", ban_command))
     app.add_handler(CommandHandler("unban", unban_command))
@@ -1233,6 +1286,7 @@ async def main_app():
     app.add_handler(CallbackQueryHandler(set_language, pattern="^set_language$"))
     app.add_handler(CallbackQueryHandler(change_language, pattern="^lang_"))
     app.add_handler(CallbackQueryHandler(show_guide, pattern="^show_guide$"))
+    app.add_handler(CallbackQueryHandler(on_logout, pattern="^logout$"))
     app.add_handler(CallbackQueryHandler(on_back, pattern="^back$"))
     app.add_handler(CallbackQueryHandler(admin_list_users, pattern="^list_users$"))
     app.add_handler(CallbackQueryHandler(admin_list_banned, pattern="^list_banned$"))
