@@ -144,6 +144,7 @@ async def logout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         s.delete(acc)
         s.commit()
     
+    # Note: Userbot will be stopped on next restart
     await update.message.reply_text(lang_manager.get(lang, 'logout.success'))
 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -622,6 +623,7 @@ async def on_logout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         s.delete(acc)
         s.commit()
     
+    # Note: Userbot will be stopped on next restart
     await query.edit_message_text(lang_manager.get(lang, 'logout.success'))
 
 async def on_back(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
